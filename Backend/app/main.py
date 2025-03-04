@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
@@ -10,7 +10,7 @@ import utility.jwt_auth as auth
 from pydantic import BaseModel 
 import jwt
 import os
-
+import shutil
 
 app = FastAPI()
 
@@ -53,7 +53,7 @@ class UserResponse(BaseModel):
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
-    profile_picture: Optional[str] = None
+    email: Optional[str] = None
     bio: Optional[str] = None
 
 class UserLogin(BaseModel):
@@ -230,22 +230,36 @@ def delete_event(event_id: int, db: Session = Depends(get_db), current_user: Use
     db_event.date_time = db_event.date_time.isoformat() 
     return db_event
 
+# Get user profile
+@app.get("/users/{user_id}", response_model=UserResponse)
+def get_user_profile(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Update user profile
+@app.put("/users/{user_id}", response_model=UserResponse)
+def update_user_profile(user_id: int, name: Optional[str] = None, email: Optional[str] = None, bio: Optional[str] = None, profile_picture: Optional[UploadFile] = None, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="You do not have permission to update this profile")
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if name:
+        user.name = name
+    if email:
+        user.email = email
+    if bio:
+        user.bio = bio
+    if profile_picture:
+        file_location = f"uploads/profile_pictures/{profile_picture.filename}"
+        with open(file_location, "wb+") as file_object:
+            shutil.copyfileobj(profile_picture.file, file_object)
+        user.profile_picture = file_location
+    
+    db.commit()
+    db.refresh(user)
+    return user
