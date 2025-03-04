@@ -103,17 +103,29 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
+        print(f"Token received: {token}")  # Log the token
+        segments = token.split('.')
+        if len(segments) != 3:
+            print(f"Invalid token format: {token}")
+            raise credentials_exception
+        
         payload = jwt.decode(token, auth.SECRET_KEY, algorithms=[auth.ALGORITHM])
+        print(f"Decoded payload: {payload}")  # Log the decoded payload
         user_id: str = payload.get("sub")
         role: str = payload.get("role")
         if user_id is None or role is None:
+            print("Invalid token: Missing user_id or role")
             raise credentials_exception
         user = db.query(User).filter(User.id == user_id).first()
         if user is None:
+            print("Invalid token: User not found")
             raise credentials_exception
         user.role = role  # Include the role in the user object
         print(f"Current user: {user}")  # Log user information
         return user
+    except jwt.ExpiredSignatureError:
+        print("Token has expired")
+        raise HTTPException(status_code=401, detail="Token has expired")
     except jwt.PyJWTError as e:
         print(f"Token validation error: {e}")
         raise credentials_exception

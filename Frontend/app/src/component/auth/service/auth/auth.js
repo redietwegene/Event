@@ -1,19 +1,18 @@
 const AuthService = (function() {
   
-  function setToken(item, remember) {
+  function setToken(token, remember) {
     let storage = sessionStorage;
     if (remember) storage = localStorage;
-    storage.setItem('event', JSON.stringify(item));
+    storage.setItem('event_token', token);
   }
   
   function getToken() {
-    const token = localStorage.getItem('event') || sessionStorage.getItem('event');
-    return token ? JSON.parse(token) : null;
+    return localStorage.getItem('event_token') || sessionStorage.getItem('event_token');
   }
   
   function clearToken() {
-    localStorage.removeItem('event');
-    sessionStorage.removeItem('event');
+    localStorage.removeItem('event_token');
+    sessionStorage.removeItem('event_token');
   }
 
   function isAuthenticated() {
@@ -22,7 +21,14 @@ const AuthService = (function() {
 
   function getUserId() {
     const token = getToken();
-    return token && token.user ? token.user.id : null;
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.sub;
+    } catch (error) {
+      console.error('Failed to decode token:', error);
+      return null;
+    }
   }
 
   function logout() {

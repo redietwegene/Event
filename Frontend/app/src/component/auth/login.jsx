@@ -25,8 +25,8 @@ const Login = () => {
       return response.data;
     },
     onSuccess: (data) => {
-      const { access_token, user } = data;
-      AuthService.setToken({ access_token, user }, true); // Store token and user info in localStorage
+      const { access_token } = data;
+      AuthService.setToken(access_token, true); // Store only the token in localStorage
       navigate("/home");
     },
     onError: (error) => {
