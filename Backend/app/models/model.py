@@ -37,7 +37,7 @@ class Event(Base):
     organizer = relationship("User", back_populates="events")
 
 class RSVP(Base):
-    __tablename__ = "rsvps"
+    __tablename__ = "RSVP"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     event_id = Column(Integer, ForeignKey("events.id"))

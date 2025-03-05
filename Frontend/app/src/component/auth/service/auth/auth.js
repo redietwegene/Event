@@ -1,18 +1,25 @@
 const AuthService = (function() {
   
-  function setToken(token, remember) {
+  function setToken(token, role, remember) {
     let storage = sessionStorage;
     if (remember) storage = localStorage;
     storage.setItem('event_token', token);
+    storage.setItem('user_role', role);
   }
   
   function getToken() {
     return localStorage.getItem('event_token') || sessionStorage.getItem('event_token');
   }
+
+  function getRole() {
+    return localStorage.getItem('user_role') || sessionStorage.getItem('user_role');
+  }
   
   function clearToken() {
     localStorage.removeItem('event_token');
     sessionStorage.removeItem('event_token');
+    localStorage.removeItem('user_role');
+    sessionStorage.removeItem('user_role');
   }
 
   function isAuthenticated() {
@@ -38,6 +45,7 @@ const AuthService = (function() {
   return {
     setToken,
     getToken,
+    getRole,
     clearToken,
     isAuthenticated,
     getUserId,

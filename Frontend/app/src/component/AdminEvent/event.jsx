@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base_url } from '../auth/service/auth/apiend';
 import AuthService from '../auth/service/auth/auth';
 
-
 const fetchEvents = async () => {
   const response = await axios.get(`${base_url}/events`);
   return response.data;
@@ -17,7 +16,7 @@ const Event = () => {
   const [errorMessage, setErrorMessage] = useState('');
 
   const { data: events, error, isError, isLoading } = useQuery({
-    queryKey: 'events',
+    queryKey: ['events'], // Ensure queryKey is an array
     queryFn: fetchEvents,
   });
 
@@ -34,7 +33,7 @@ const Event = () => {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries('events');
+      queryClient.invalidateQueries(['events']); // Ensure queryKey is an array
     },
     onError: (error) => {
       console.error('Error deleting event:', error);
@@ -90,10 +89,14 @@ const Event = () => {
             </li>
           ))}
         </ul>
-
       </div>
-      <div>  
+      <div>
         <Link to="/createEvent"> CREATE EVENT</Link>
+      </div>
+      <div>
+        <Link to="/all-rsvps" className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+          All Reservations
+        </Link>
       </div>
     </div>
   );

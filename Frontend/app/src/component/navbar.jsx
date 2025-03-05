@@ -6,7 +6,9 @@ const Navbar = () => {
   const isLoggedIn = AuthService.isAuthenticated(); // Check if the user is authenticated
   const userId = AuthService.getUserId(); // Get the user ID from the authentication service
   const navigate = useNavigate();
-
+  const role = AuthService.getRole();
+  
+  console.log("User role:", role);
   const handleLogout = () => {
     AuthService.logout();
     navigate('/login');
@@ -24,7 +26,21 @@ const Navbar = () => {
               <Link to="/home" className="text-white hover:text-gray-400">Home</Link>
             </li>
             <li>
-              <Link to="/events" className="text-white hover:text-gray-400">Events</Link>
+                <div className="container mx-auto flex justify-between items-center">
+       
+        <div className="flex space-x-4">
+          {role === 'organizer' ? (
+            <>
+              <Link to="/events" className="text-white"> Events</Link>
+            </>
+          ) : (
+            <>
+              <Link to="/eventlist" className="text-white"> Events</Link>
+            </>
+          )}
+       
+        </div>
+      </div>
             </li>
             <li>
               <Link to="/about" className="text-white hover:text-gray-400">About</Link>

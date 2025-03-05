@@ -11,8 +11,13 @@ from pydantic import BaseModel
 import jwt
 import os
 import shutil
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy.orm import joinedload
 
 app = FastAPI()
+
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 
 # Enable CORS
 origins = [
@@ -96,6 +101,21 @@ class TokenResponse(BaseModel):
     token_type: str
     user: UserResponse
 
+class RSVPCreate(BaseModel):
+    event_id: int
+
+class RSVPResponse(BaseModel):
+    id: int
+    user_id: int
+    event_id: int
+    event:Optional[EventResponse]=None
+    user:Optional[UserResponse]=None
+    
+
+    class Config:
+        orm_mode = True
+        
+        
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -263,3 +283,53 @@ def update_user_profile(user_id: int, name: Optional[str] = None, email: Optiona
     db.commit()
     db.refresh(user)
     return user
+
+
+@app.post("/rsvps", response_model=RSVPResponse)
+def create_RSVP(rsvp: RSVPCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    db_event = db.query(Event).filter(Event.id == rsvp.event_id).first()
+    if not db_event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    db_rsvp = RSVP(user_id=current_user.id, event_id=rsvp.event_id)
+    db.add(db_rsvp)
+    db.commit()
+    db.refresh(db_rsvp)
+    if isinstance(db_event.date_time, datetime):
+        db_event.date_time = db_event.date_time.isoformat()  # Convert datetime to string
+    db_rsvp.event = db_event
+    return db_rsvp
+
+
+@app.get("/rsvps", response_model=List[RSVPResponse])
+def get_RSVPs(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    RSVPs = db.query(RSVP).options(joinedload(RSVP.event)).filter(RSVP.user_id == current_user.id).all()
+    for rsvp in RSVPs:
+        if isinstance(rsvp.event.date_time, datetime):
+            rsvp.event.date_time = rsvp.event.date_time.isoformat()  # Convert datetime to string
+    return RSVPs
+
+# Cancel a RSVP
+@app.delete("/rsvps/{rsvps_id}", response_model=RSVPResponse)
+def cancel_RSVP(rsvps_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    rsvp = db.query(RSVP).options(joinedload(RSVP.event)).filter(RSVP.id == rsvps_id, RSVP.user_id == current_user.id).first()
+    if not rsvp:
+        raise HTTPException(status_code=404, detail="RSVP not found")
+    
+    if isinstance(rsvp.event.date_time, datetime):
+        rsvp.event.date_time = rsvp.event.date_time.isoformat()  # Convert datetime to string
+    
+    db.delete(rsvp)
+    db.commit()
+    return rsvp
+
+@app.get("/all-rsvps", response_model=List[RSVPResponse])
+def get_all_RSVPs(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.role != "organizer":
+        raise HTTPException(status_code=403, detail="You do not have permission to view all RSVPs")
+    
+    RSVPs = db.query(RSVP).options(joinedload(RSVP.event), joinedload(RSVP.user)).all()
+    for rsvp in RSVPs:
+        if isinstance(rsvp.event.date_time, datetime):
+            rsvp.event.date_time = rsvp.event.date_time.isoformat()  # Convert datetime to string
+    return RSVPs

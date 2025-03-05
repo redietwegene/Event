@@ -5,13 +5,16 @@ import Home from './component/Home.jsx'
 import About from './component/About.jsx'
 import Contact from './component/contact'
 import Login from './component/auth/login'
-import Event from './component/Event/event'
-import EditEvent from './component/Event/editEvent.jsx'
-import CreateEvent from './component/Event/createEvent.jsx'
+import Event from './component/AdminEvent/event.jsx'
+import EditEvent from './component/AdminEvent/editEvent.jsx'
+import CreateEvent from './component/AdminEvent/createEvent.jsx'
 import Landingpage from './component/landingpage.jsx'
 import Signup from './component/auth/signup.jsx'
+import Eventlist from './component/UserEvent/EventList.jsx'
 import UserProfile from './component/profile.jsx'
 import { Routes,Route} from 'react-router-dom'
+import ReservationList from './component/UserEvent/Reservations.jsx'
+import EventReservations from './component/AdminEvent/Reserved.jsx'
 
 function App() {
 
@@ -30,7 +33,10 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/events" element={<Event />} />
           <Route path="/edit-event/:eventId" element={<EditEvent />} />
-          <Route path="/profile/:userId" element={<UserProfile />} />
+         <Route path="/profile/:userId" element={<UserProfile />} />
+         <Route path='/eventlist' element={<Eventlist/> } />
+         <Route path='/rsvps' element={<ReservationList />} />
+          <Route path="/all-rsvps" element={<EventReservations />} />
 
         
          

@@ -103,6 +103,15 @@ const UserProfile = () => {
                 />
               </div>
               <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2">Bio</label>
+                <textarea
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  name="bio"
+                  value={user.bio}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2">Profile Picture</label>
                 <input
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -111,17 +120,8 @@ const UserProfile = () => {
                   onChange={handleProfilePictureChange}
                 />
                 {user.profile_picture && !(user.profile_picture instanceof File) && (
-                  <img src={`/${user.profile_picture}`} alt="Profile" className="mt-4 w-32 h-32 rounded-full" />
+                  <img src={`${base_url}/${user.profile_picture}`} alt="Profile" className="mt-4 w-32 h-32 rounded-full" />
                 )}
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">Bio</label>
-                <textarea
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  name="bio"
-                  value={user.bio}
-                  onChange={handleInputChange}
-                />
               </div>
               <div className="flex justify-between mt-4">
                 <button
@@ -142,12 +142,12 @@ const UserProfile = () => {
             <>
               <h3 className="text-xl font-bold">{user.name}</h3>
               <p>{user.email}</p>
+              <p>{user.bio}</p>
               <img
-                src={user.profile_picture ? `/${user.profile_picture}` : defaultAvatar}
+                src={user.profile_picture ? `${base_url}/${user.profile_picture}` : defaultAvatar}
                 alt="Profile"
                 className="mt-4 w-32 h-32 rounded-full"
               />
-              <p>{user.bio}</p>
               <div className="flex justify-between mt-4">
                 <button
                   className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
