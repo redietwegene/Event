@@ -1,5 +1,6 @@
 import React from 'react'
 import './App.css'
+import './index.css'
 import Navbar from './component/navbar'
 import Home from './component/Home.jsx'
 import About from './component/About.jsx'
@@ -21,6 +22,9 @@ function App() {
 
   return (
     <>
+      <div>
+        <p className=''>how ar u </p>
+      </div>
       <Navbar />
         
         <Routes>

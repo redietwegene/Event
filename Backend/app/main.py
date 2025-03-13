@@ -316,8 +316,8 @@ def cancel_RSVP(rsvps_id: int, db: Session = Depends(get_db), current_user: User
     if not rsvp:
         raise HTTPException(status_code=404, detail="RSVP not found")
     
-    if isinstance(rsvp.event.date_time, datetime):
-        rsvp.event.date_time = rsvp.event.date_time.isoformat()  # Convert datetime to string
+    # if isinstance(rsvp.event.date_time, datetime):
+        # rsvp.event.date_time = rsvp.event.date_time.isoformat()  # Convert datetime to string
     
     db.delete(rsvp)
     db.commit()
